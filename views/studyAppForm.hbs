@@ -1,0 +1,146 @@
+<script src='https://api.mapbox.com/mapbox-gl-js/v0.46.0/mapbox-gl.js'></script>
+<link href='https://api.mapbox.com/mapbox-gl-js/v0.46.0/mapbox-gl.css' rel='stylesheet' />
+
+
+
+<form action='/newStudyGroup' method='post'>
+    {{!--Creator ID : <input type="text" name="creatorID" value={{creator._id}}>--}}
+    <div class="form-group ">
+        <label for="StudyName">Name of the study group</label>
+        <input class="form-control" type="text" name="StudyName" aria-describedby="nameDesc" id="StudyName">
+        <small id="nameDesc" class="form-text text-muted"> This is the name that is going to apear when people search through the list of groups</small>
+    </div>
+
+    <div class="form-group ">
+        <label for="StudySubject">The Subject your going to study</label>
+        <input class="form-control" type="text" name="StudySubject" aria-describedby="studyDesc" id="StudySubject">
+        <small id="studyDesc" class="form-text text-muted"> This is what will be listed as your subject when people search through the list of groups</small>
+    </div>
+
+
+    <div class="form-group">
+        <label for="startDate">When are you planning to study? Don't forget to include the time</label>
+        <input class="form-control" type="datetime-local" name="startDate" aria-describedby="dateDesc" id="startDate">
+        <small id="dateDesc" class="form-text text-muted"> This is what will be recorded and presented as the time you all are planning to study at</small>
+    </div>
+
+    <div class="form-group">
+        <label for="map">Where are you planning to study? </label>
+        <div id='map' aria-describedby="mapDesc" class=""></div>
+        <button id="center-btn" type="button" class="btn btn-secondary">Zoom to my location</button>
+        <small id="mapDesc" class="form-text text-muted"> This will record the location you want to study at.</small>
+    </div>
+
+
+
+    <script>
+        var center = [114.1095, 22.3964];
+
+
+        mapboxgl.accessToken = 'pk.eyJ1IjoiMTdicmFzc2VzY29mYzEiLCJhIjoiY2poc255YW11MDRiMzNwcG9qaHEwbXh5byJ9.anaqn1W17fdvxkPGhsQVpg';
+        var map = new mapboxgl.Map({
+            container: 'map',
+            style: 'mapbox://styles/mapbox/streets-v10',
+            zoom: 9,
+            center: center
+        });
+
+
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(setCenter,
+                function(error) {
+                    if (error.code == error.PERMISSION_DENIED)
+                        console.log("you denied me :-(");
+                })
+        }
+
+
+        function setCenter(position) {
+            center = [position.coords.longitude, position.coords.latitude]
+            fly(center);
+        }
+
+        function fly(coords) {
+            map.flyTo({
+                // These options control the ending camera position: centered at
+                // the target, at zoom level 9, and north up.
+                center: coords,
+                zoom: 16,
+                bearing: 0,
+
+                // These options control the flight curve, making it move
+                // slowly and zoom out almost completely before starting
+                // to pan.
+                speed: 0.5, // make the flying slow
+                curve: 1, // change the speed at which it zooms out
+
+                // This can be any easing function: it takes a number between
+                // 0 and 1 and returns another number between 0 and 1.
+                easing: function(t) {
+                    return t;
+                }
+            });
+        }
+
+
+
+        map.on('click', function(e) {
+            //console.log(e);
+            //alert(e.lngLat);
+            if (map.getLayer("marker")) {
+
+                map.removeLayer("marker");
+            }
+
+            if (map.getSource("marker")) {
+                map.removeSource("marker");
+            }
+
+
+            map.loadImage("https://i.imgur.com/MK4NUzI.png", function(error, image) {
+                if (error) throw error;
+
+
+                if (!map.hasImage('custom-marker')) {
+                    map.addImage('custom-marker', image);
+                }
+                /* Style layer: A style layer ties together the source and image and specifies how they are displayed on the map. */
+                map.addLayer({
+                    id: "marker",
+                    type: "symbol",
+                    /* Source: A data source specifies the geographic coordinate where the image marker gets placed. */
+                    source: {
+                        type: "geojson",
+                        data: {
+                            type: "FeatureCollection",
+                            features: [{ "type": "Feature", "geometry": { "type": "Point", "coordinates": [e.lngLat.lng, e.lngLat.lat] } }]
+                        }
+                    },
+                    layout: {
+                        "icon-image": "custom-marker",
+                    }
+                });
+            });
+            document.getElementById("lng").value = e.lngLat.lng;
+            document.getElementById("lat").value = e.lngLat.lat;
+        });
+
+
+        //Give the center button its on click event
+        document.getElementById("center-btn").onclick = function() { fly(center) };
+    </script>
+
+    <div class="hide">
+        Map lng : <input id="lng" type="text " name="lng"> Map lat : <input id="lat" type="text " name="lat">
+    </div>
+
+
+    <div class="form-group">
+        <label for="submit">Once your done submit the new study group. Don't forget anything.</label>
+        <br/>
+        <button id="submit" type="submit" class="btn btn-primary" value="Submit">Submit</button>
+    </div>
+
+
+
+</form>

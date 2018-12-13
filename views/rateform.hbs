@@ -1,0 +1,78 @@
+<form action="/rate" method="post">
+
+  <input type="text" class="hide" name="groupid" value="{{id}}" />
+
+  <h1> Overall Group Rating</h1>
+  <label>
+    <input type="radio" name="groupOverallRating" value="1" />
+    <span class="icon">★</span>
+  </label>
+  <label>
+    <input type="radio" name="groupOverallRating" value="2" />
+    <span class="icon">★</span>
+    <span class="icon">★</span>
+  </label>
+  <label>
+    <input type="radio" name="groupOverallRating" value="3" />
+    <span class="icon">★</span>
+    <span class="icon">★</span>
+    <span class="icon">★</span>   
+  </label>
+  <label>
+    <input type="radio" name="groupOverallRating" value="4" />
+    <span class="icon">★</span>
+    <span class="icon">★</span>
+    <span class="icon">★</span>
+    <span class="icon">★</span>
+  </label>
+  <label>
+    <input type="radio" name="groupOverallRating" value="5" />
+    <span class="icon">★</span>
+    <span class="icon">★</span>
+    <span class="icon">★</span>
+    <span class="icon">★</span>
+    <span class="icon">★</span>
+  </label>
+
+  <h1> Individual ratings </h1>
+  {{#each people as |person|}}
+  <h4>
+    {{#each ../names as |name userKey|}} {{#compare userKey person operator="=="}} {{name}} {{/compare}} </h4> {{/each}}
+  <label>
+    <input type="radio" name="{{this}}" value="1" />
+    <span class="icon">★</span>
+  </label>
+  <label>
+    <input type="radio" name="{{this}}" value="2" />
+    <span class="icon">★</span>
+    <span class="icon">★</span>
+  </label>
+  <label>
+    <input type="radio" name="{{this}}" value="3" />
+    <span class="icon">★</span>
+    <span class="icon">★</span>
+    <span class="icon">★</span>   
+  </label>
+  <label>
+    <input type="radio" name="{{this}}" value="4" />
+    <span class="icon">★</span>
+    <span class="icon">★</span>
+    <span class="icon">★</span>
+    <span class="icon">★</span>
+  </label>
+  <label>
+    <input type="radio" name="{{this}}" value="5" />
+    <span class="icon">★</span>
+    <span class="icon">★</span>
+    <span class="icon">★</span>
+    <span class="icon">★</span>
+    <span class="icon">★</span>
+  </label>
+  <script>
+    $(':radio').change(function() {
+      console.log('New star rating: ' + this.value);
+    });
+  </script>{{/each}}
+
+  <button type="submit"> Rate </button>
+</form>

@@ -1,0 +1,73 @@
+{{!--<h1> Profile </h1>--}}
+<br/>
+
+<div>
+    <div class="jumbotron jumbotron-fluid">
+        <div class="container">
+            <h1 class="display-4">Local Account data</h1>
+            <p class="lead">This is all the information stored about you on our system</p>
+
+            <h5>Username - {{user.local.username}}</h5>
+            <h5>Birthday - {{user.local.birth}}</h5>
+
+            <!-- Button trigger modal -->
+            <button type="button" class="btn btn-secondary" data-toggle="modal" data-target="#updatemodal"> Change your account data</button>
+        </div>
+    </div>
+
+
+    <div class="jumbotron jumbotron-fluid">
+        <div class="container">
+            <h1 class="display-4">Google information</h1>
+            <p class="lead">This is the information we use to log you in through google. Don't share this with anyone!</p>
+
+            {{#if user.google}}
+                <h5>{{user.google.id}}</h5>
+                <h5>{{user.google.name}}</h5>
+                <h5>{{user.google.email}}</h5>
+            {{else}}
+                <h5> Looks like you haven't connected your google account </h5>
+            {{/if}}
+        </div>
+    </div>
+
+
+
+    <!-- Modal -->
+    <div class="modal fade" id="updatemodal" tabindex="-1" role="dialog" aria-labelledby="updatemodalTitle" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLongTitle">Modal title</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+                </div>
+                <form action='/inputBirthDate' method='post'>
+                    <div class="modal-body">
+                        <h6> This is where you can update some of the local data we store about you</h6>
+
+                        <div class="form-group">
+
+                            <label for='birth'>Update your birthday</label>
+
+                            <input class="form-control" id='name' type='date' name='birth' value="{{user.local.birth}}" aria-describedby="birthDesc"></input>
+                            <small id="birthDesc" class="form-text text-muted">
+                                 <h8> How we use your birthday? </h8>
+                            <br/>
+                            We use your birthday to rank the study groups for you. Specifically trying to match you with people of a similar age.</small>{{!--<button role='submit'>Update Birthdate</button>--}}
+                        </div>
+
+
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary" role='submit' value="submit">Save changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+
+</div>

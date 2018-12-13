@@ -1,0 +1,101 @@
+<script src='https://api.mapbox.com/mapbox-gl-js/v0.46.0/mapbox-gl.js'></script>
+<link href='https://api.mapbox.com/mapbox-gl-js/v0.46.0/mapbox-gl.css' rel='stylesheet' />
+
+
+<div class="panel">
+    <p class="h1 text-center">Welcome to the study Group app</p>
+
+    <div id="controller" class="carousel slide" data-ride="carousel">
+        <div class="carousel-inner">
+            <div class="carousel-item active grey" style="height: 400px; width: auto;">
+                <h1 class="text-center" style="color:white; padding-top:10%">Search</h1>
+            </div>
+            <div class="carousel-item grey text-center" style="height: 400px; width: auto;">
+                <h1 class="text-center" style="color:white; padding-top:10%">Join</h1>
+            </div>
+            <div class="carousel-item grey text-center" style="height: 400px; width: auto;">
+                <h1 class="text-center" style="color:white; padding-top:10%">Rate</h1>
+            </div>
+        </div>
+        <a class="carousel-control-prev" href="#controller" role="button" data-slide="prev">
+    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+    <span class="sr-only">Previous</span>
+  </a>
+        <a class="carousel-control-next" href="#controller" role="button" data-slide="next">
+    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+    <span class="sr-only">Next</span>
+  </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col"></div>
+    <div class="col">
+        <h3>Whats going on around you?</h3>
+        <br/>
+        <div id='map' style="width:720px;height:480px;" aria-describedby="mapDesc" class=""></div> <button id="center-btn" type="button" class="btn btn-secondary">Zoom to my location</button>
+    </div>
+    <div class="col"></div>
+
+</div>
+
+
+
+<script>
+    var center = [114.1095, 22.3964];
+
+
+    mapboxgl.accessToken = 'pk.eyJ1IjoiMTdicmFzc2VzY29mYzEiLCJhIjoiY2poc255YW11MDRiMzNwcG9qaHEwbXh5byJ9.anaqn1W17fdvxkPGhsQVpg';
+    var map = new mapboxgl.Map({
+        container: 'map',
+        style: 'mapbox://styles/mapbox/streets-v10',
+        zoom: 9,
+        center: center
+    });
+
+
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(setCenter,
+            function(error) {
+                if (error.code == error.PERMISSION_DENIED)
+                    console.log("you denied me :-(");
+            })
+    }
+
+
+    function setCenter(position) {
+        center = [position.coords.longitude, position.coords.latitude]
+        fly(center);
+    }
+
+    function fly(coords) {
+        map.flyTo({
+            // These options control the ending camera position: centered at
+            // the target, at zoom level 9, and north up.
+            center: coords,
+            zoom: 16,
+            bearing: 0,
+
+            // These options control the flight curve, making it move
+            // slowly and zoom out almost completely before starting
+            // to pan.
+            speed: 0.5, // make the flying slow
+            curve: 1, // change the speed at which it zooms out
+
+            // This can be any easing function: it takes a number between
+            // 0 and 1 and returns another number between 0 and 1.
+            easing: function(t) {
+                return t;
+            }
+        });
+    }
+
+    //Give the center button its on click event
+    document.getElementById("center-btn").onclick = function() { fly(center) };
+</script>
+
+
+{{#each group}}
+<script>
+    var marker = new mapboxgl.Marker().setLngLat(['{{ this.info.location.lng }}', '{{ this.info.location.lat }}']).addTo(map);
+</script> {{/each}}

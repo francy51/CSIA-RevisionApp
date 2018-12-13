@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <title>{{title}}</title>
+  <link rel='stylesheet' href='/stylesheets/style.css' />
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" integrity="sha384-WskhaSGFgHYWDcbwN70/dfYBj47jz9qbsMId/iRN3ewGhXQFZCSftd1LZCfmhktB" crossorigin="anonymous">
+
+</head>
+
+<body>
+  {{!-- User info for debuging--}}
+  <ul class="nav nav-pills">
+    <li>
+      {{!--In future this will be an image with href--}}
+      <a href='/'>
+        <h1>LOGO</h1>
+      </a>
+    </li>
+    {{#if user}}
+    <li class="nav-item">
+      <a class="nav-link" href="/profile">Profile {{#if user.local.birth}} 👍 {{else}} <span> 👎 Please input your birthday!</span>{{/if}}</a>
+    </li>
+
+    <li class="nav-item">
+      <a class="nav-link" href="/rankedGroups">find group</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="/allGroups">all groups</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="/newStudyGroup">new group</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="/logout">log out</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link">{{user.local.username}}</a>
+    </li>
+
+    {{else}}
+    <li class="nav-item">
+      <a class="nav-link" href="/login">Login</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="/login">Register</a>
+    </li>
+    {{/if}}
+
+  </ul>
+  {{!--
+  <div>--}} {{!-- {{#if user}}--}} {{!--
+    <h2>{{user._id}}</h2>--}} {{!--
+    <h2>{{user.local.username}}</h2>--}} {{!-- {{/if}}--}} {{!--
+  </div>--}}
+  <div>
+    {{{body}}}
+  </div>
+</body>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js" integrity="sha384-smHYKdLADwkXOn1EmN1qk/HfnUcbVRZyYmZ4qpPea6sjB/pTJ0euyQp0Mk8ck+5T" crossorigin="anonymous"></script>
+<script src="/javascripts/refresh.js"></script>
+
+</html>

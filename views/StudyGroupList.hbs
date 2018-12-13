@@ -1,0 +1,69 @@
+<script src='https://api.mapbox.com/mapbox-gl-js/v0.46.0/mapbox-gl.js'></script>
+<link href='https://api.mapbox.com/mapbox-gl-js/v0.46.0/mapbox-gl.css' rel='stylesheet' />
+
+<form>
+    <div class="form-group">
+        <label for="filter">Subject</label>
+        <input type="text" class="form-control" id="filter" aria-describedby="filterHelp" name="filter">
+        <small id="filterHelp" class="form-text text-muted">Search for a specific subject</small>
+    </div>
+    <button type="submit" class="btn btn-primary">Submit</button>
+</form>
+
+{{#if group}} {{#each group}}
+
+<h1>{{this.info.groupname}}</h1>
+
+{{!--{{#if ../user._id}} {{../user._id}} {{else}} out of scope {{/if}}--}}
+<br> {{!--
+<h3>{{this._id}}</h3>--}} {{!--Map Scripts and Obj--}}
+<div class="row">
+    <div id='{{this._id}}' class="md-col-4" style='width: 400px; height: 300px;'></div>
+    <div class="md-col-8">
+        <ul class="h4">
+            <li>Subject: <b>{{this.info.groupsubject}}</b></li>
+            <li>Start Date: <b>{{this.info.startdate}}</b></li>
+            <li>People:
+                <div class="pre-scrollable">
+                    <ul>
+                        {{#each this.people as |person index|}}{{#each ../../usernames as |name userKey|}}
+                        <li>{{#compare userKey person operator="=="}} {{name}} {{/compare}}</li> {{/each}} {{/each}}
+
+
+                    </ul>
+                </div>
+            </li>
+            {{#if this.result}}
+            <li>
+                Final Score : {{this.result}}
+            </li>
+            {{/if}}
+
+        </ul>
+    </div>
+</div>
+<script>
+    mapboxgl.accessToken = 'pk.eyJ1IjoiMTdicmFzc2VzY29mYzEiLCJhIjoiY2poc255YW11MDRiMzNwcG9qaHEwbXh5byJ9.anaqn1W17fdvxkPGhsQVpg';
+    var map = new mapboxgl.Map({
+        container: '{{this._id}}',
+        style: 'mapbox://styles/mapbox/streets-v10',
+        center: ['{{ this.info.location.lng }}', '{{ this.info.location.lat }}'],
+        zoom: 16
+    });
+
+    var marker = new mapboxgl.Marker()
+        .setLngLat(['{{ this.info.location.lng }}', '{{ this.info.location.lat }}'])
+        .addTo(map);
+</script>
+
+<br/> {{#if this.info.isended}}
+
+<a href='/rate/{{this._id}}' role='button' class='btn btn-primary btn-lg'>Rate this group</a> {{else}}
+
+<a href='/join/{{this._id}}/{{this.input}}' role='button' class="btn btn-primary btn-lg">join</a> {{#compare this.info.creatorid ../user._id operator="=="}} <a href='/endgroup/{{this._id}}' role='button' class="btn btn-primary btn-lg">end</a>{{/compare}}
+{{/if}}
+<br/> {{/each}} {{else}}
+
+<h1>We are sorry no groups with that subject were found</h1>
+
+{{/if}}
