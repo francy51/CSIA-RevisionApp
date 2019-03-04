@@ -22,7 +22,7 @@ var usersRouter = require('./routes/users');
 
 var app = express();
 
-mongoose.connect(configDB.url);
+mongoose.connect(configDB.url, { useNewUrlParser: true });
 
 
 // view engine setup

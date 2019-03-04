@@ -162,11 +162,6 @@ router.post('/rate', function(req, res, next) {
 
 });
 
-
-
-
-
-
 //Returns all the groups 
 router.get('/allGroups', function(req, res) {
     let names = {}
@@ -184,7 +179,6 @@ router.get('/allGroups', function(req, res) {
         });
     })
 })
-
 
 //used to joing the group passes group id and the NN input variables
 router.get('/join/:id', function(req, res, next) {
@@ -225,7 +219,6 @@ router.get('/endgroup/:id', function(req, res, next) {
 
 })
 
-
 //Returns all available groups in a ranked fashion
 router.get('/rankedGroups', function(req, res) {
 
@@ -236,9 +229,6 @@ router.get('/rankedGroups', function(req, res) {
 
     var calculatedUserData = {}
 
-    //User age will be used for every single group so there is no need for it to be calculated more than once
-    var userAge = calculateAge(req.user.local.birth);
-
     User.find({}, '_id ratings local', function(err, users) {
         if (err) console.log(err);
         //console.log(users[0]._id)
@@ -246,36 +236,28 @@ router.get('/rankedGroups', function(req, res) {
             userIDList.push(users[i]._id);
             names[users[i]._id] = users[i].local.username;
 
-
-
             let baseRateObj = {}
-
-
-
+            //Parsing rating object so that it is formated correctly
             for (let r = 0; r < users[i].ratings.length; r++) {
                 baseRateObj[users[i].ratings[r].id] = users[i].ratings[r].rating
             }
             // console.log(baseRateObj)
-            calculatedUserData[users[i]._id] = {};
+            //storing all the users data within associative arrays
             calculatedUserData[users[i]._id].ratings = baseRateObj;
-
             calculatedUserData[users[i]._id].age = calculateAge(users[i].local.birth);
         }
 
 
         //Find the similarity score for each person and then create an object containing all the similarity scores
         for (let u = 0; u < userIDList.length; u++) {
-            //Skip the user since we don't want a similairty score of himself vs himself.
+            //Skip the current user since we don't want a similairty score of himself vs himself.
             if (userIDList[u] == req.user._id)
                 continue;
             //console.log(userList[u]);
             // console.log(calculatedUserData)
 
-            //Creates an entry in the object that looks like this id1 : SimilarityScore1
+            //Store the user's similarity in teh associative array
             calculatedUserData[userIDList[u]].similarityScore = findSimilarity(calculatedUserData[req.user._id].ratings, calculatedUserData[userIDList[u]].ratings, userIDList)
-
-
-
         }
 
         // console.log(calculatedUserData);
@@ -283,8 +265,8 @@ router.get('/rankedGroups', function(req, res) {
         //Create object to store group similarity scores
         let groupCalculatedData = {}
 
+        //create a query object to then pass to the find() method
         let query = {}
-
 
         //Check if there are any get parameters in the url if there are then change the query object
         if (req.query.filter) {
@@ -299,59 +281,47 @@ router.get('/rankedGroups', function(req, res) {
             }
         }
 
-        console.log(query)
+        // console.log(query)
 
-        //Now use the individual similarity scores to give each group their own similarity average
+        //find the relavent groups depending on the query
         Group.find(query).sort('-info.startdate').exec(function(err, groups) {
             if (err) console.log(err);
+            //create a group array for sorting
             var groupArr = []
             for (let index = 0; index < groups.length; index++) {
 
 
-                if (groups[index].people.length <= 0) {
-                    groupCalculatedData[groups[index]._id] = {
-                        "avgSim": 0,
-                        "avgAge": 0,
-                        "groupSize": 0
-                    }
+                let totSim = 0;
+                let totAge = 0;
+                let ageCount = 0;
+
+                //calculate avverages
+                //average similarity
+                for (let pIndex = 0; pIndex < groups[index].people.length; pIndex++) {
+                    totSim += calculatedUserData[groups[index].people[pIndex]].similarityScore
+
+                    //Only increase the average age if the person actuall has their age recorded
+
+                    //If user has age recorded
+                    if (calculatedUserData[groups[index].people[pIndex]].age != null) {
+                        totAge += calculatedUserData[groups[index].people[pIndex]].age;
+
+                        ageCount += 1
+                    };
                 }
-                else {
-                    let totSim = 0;
-                    let totAge = 0;
-                    let ageCount = 0;
+                //Divide the total by the length of people array aka number of similarity scores
+                //Place the average similarity into the groups object
+                //Do not save this to database since similarity score changes for every user and needs to be calculated everytime
+                let avgSim = totSim / groups[index].people.length
 
+                //push collection into array so that it can be sorted
+                groupArr.push([groups[index]._id, avgSim])
 
-
-                    for (let pIndex = 0; pIndex < groups[index].people.length; pIndex++) {
-                        totSim += calculatedUserData[groups[index].people[pIndex]].similarityScore
-
-                        //Only increase the average age if the person actuall has their age recorded
-
-                        //If user has age recorded
-                        if (calculatedUserData[groups[index].people[pIndex]].age != null) {
-                            totAge += calculatedUserData[groups[index].people[pIndex]].age;
-
-                            ageCount += 1
-                        };
-                    }
-                    //Divide the total by the length of people array aka number of similarity scores
-                    //Place the average similarity into the groups object
-                    //Do not save this to database since similarity score changes for every user and needs to be calculated everytime
-
-                    groupCalculatedData[groups[index]._id] = {
-                        "avgSim": totSim / groups[index].people.length,
-                        "avgAge": totAge / ageCount,
-                        "groupSize": groups[index].people.length
-                    }
-
-                    groupArr.push([groups[index]._id, totSim / groups[index].people.length])
-                    groups[index].similarity = totSim / groups[index].people.length
-                    // console.log(groupCalculatedData)
-                    //Also records everyones age
-
-
-
-                }
+                //update group object to contain averages
+                groups[index].avgSim = (avgSim * 5).toFixed(2);
+                groups[index].avgAge = (totAge / ageCount).toFixed(0);
+                // console.log(groupCalculatedData)
+                //Also records everyones age
                 // console.log(groupCalculatedData);
             }
 
@@ -362,22 +332,18 @@ router.get('/rankedGroups', function(req, res) {
 
             //Reorder the groups in another array based on their rating. 
             let renderArr = []
-            console.log(groupArr)
+            // console.log(groupArr)
+            //Order the array
             for (let index = 0; index < groupArr.length; index++) {
                 for (let x = 0; x < groups.length; x++) {
                     if (groups[x]._id == groupArr[index][0]) {
-
-
-                        groups[x].result = (groupArr[index][1] * 5).toFixed(2)
-                        // console.log(groups[x])
                         renderArr.push(groups[x]);
                     }
                 }
             }
 
             // console.log(renderArr)
-            //     //Render the final page and pass in all nececary variables.
-
+            //Render the final page and pass in all nececary variables.
             res.render('StudyGroupList', {
                 group: renderArr,
                 usernames: names,
@@ -385,11 +351,9 @@ router.get('/rankedGroups', function(req, res) {
                 filter: req.query.filter
             });
         })
-        // });
 
-    }) //Calculate similarity scores per each person relative to the current user
+    })
 })
-
 
 //Route used to update user birthday data
 router.post('/inputBirthDate', function(req, res, next) {
@@ -403,7 +367,6 @@ router.post('/inputBirthDate', function(req, res, next) {
     })
 
 })
-
 
 //Functions used to find the similarity score of two users
 //The similarity is found using pearsons corelation formula
@@ -478,8 +441,6 @@ function findSimilarity(user1, user2, IDList) {
         return numerator / denominator;
 
 }
-
-
 
 function calculateAge(birthdayString) { // birthday is a date
 
